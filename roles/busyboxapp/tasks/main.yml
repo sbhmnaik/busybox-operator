@@ -1,2 +1,30 @@
 ---
-# tasks file for busyboxapp
+- name: start busybox
+  k8s:
+    definition:
+      kind: DeploymentConfig
+      apiVersion: apps.openshift.io/v1
+      metadata:
+        name: 'busybox'
+        namespace: '{{ meta.namespace }}'
+      spec:
+        template:
+          metadata:
+            labels:
+              name: busybox
+          spec:
+            containers:
+              - name: helloworld
+                image: "busybox:1.28"
+        replicas: "{{size}}"
+        selector:
+          name: busybox
+        strategy:
+          type: Rolling
+          rollingParams:
+            pre:
+              failurePolicy: Abort
+              execNewPod:
+                containerName: helloworld
+                command: ['sh', '-c', 'echo Hello from Busybox! ; sleep 600']
+          
